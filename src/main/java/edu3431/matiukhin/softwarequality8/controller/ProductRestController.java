@@ -1,23 +1,23 @@
 package edu3431.matiukhin.softwarequality8.controller;/*
 @author sasha
-@project SoftwareQuality7
+@project SoftwareQual8
 @class ProductRestController
 @version 1.0.0
-@since 24.04.2025 - 20 - 21
+@since 01.05.2025 - 01 - 43
 */
 
-
+import edu3431.matiukhin.softwarequality8.request.CreateProductRequest;
 import edu3431.matiukhin.softwarequality8.request.ProductRequest;
+import edu3431.matiukhin.softwarequality8.request.UpdateProductRequest;
 import edu3431.matiukhin.softwarequality8.service.ProductService;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@Data
+
 @RequiredArgsConstructor
+@RestController
 @RequestMapping({"/api/v1/products"})
 public class ProductRestController {
     private final ProductService itemService;
@@ -33,12 +33,12 @@ public class ProductRestController {
     }
 
     @PostMapping
-    public ProductRequest createItem(@RequestBody ProductRequest item) {
+    public ProductRequest createItem(@RequestBody CreateProductRequest item) {
         return this.itemService.createItem(item);
     }
 
     @PutMapping
-    public ProductRequest updateItem(@RequestBody ProductRequest item) {
+    public ProductRequest updateItem(@RequestBody UpdateProductRequest item) {
         return this.itemService.updateItem(item);
     }
 

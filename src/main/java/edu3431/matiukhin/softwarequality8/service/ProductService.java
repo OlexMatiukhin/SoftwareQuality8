@@ -1,21 +1,22 @@
 package edu3431.matiukhin.softwarequality8.service;/*
 @author sasha
-@project SoftwareQuality5
-@class ItemService
+@project SoftwareQual8
+@class ProductService
 @version 1.0.0
-@since 14.04.2025 - 15 - 29
+@since 01.05.2025 - 01 - 45
 */
-
 
 
 import edu3431.matiukhin.softwarequality8.model.Product;
 import edu3431.matiukhin.softwarequality8.repository.ProductRepository;
 import edu3431.matiukhin.softwarequality8.request.CreateProductRequest;
 import edu3431.matiukhin.softwarequality8.request.ProductRequest;
+import edu3431.matiukhin.softwarequality8.request.UpdateProductRequest;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,44 +43,69 @@ public class ProductService {
     public List<ProductRequest> getAll() {
         List<Product> items = itemRepository.findAll();
         return items.stream()
-                .map(this::toCreateItemRequest)
+                .map(this::fromProductToProductRequest)
                 .collect(Collectors.toList());
     }
 
     public ProductRequest getById(String id) {
         Product item = this.itemRepository.findById(id).orElse(null);
-        return item != null ? toCreateItemRequest(item) : null;
+        return item != null ? fromProductToProductRequest(item) : null;
     }
 
-    public ProductRequest createItem(ProductRequest itemDTO) {
-        Product itemFromDTO = fromDto(itemDTO);
-        Product savedItem = this.itemRepository.save(itemFromDTO);
-        return toCreateItemRequest(savedItem);  // Return the saved item as DTO
+    public ProductRequest createItem(CreateProductRequest productRequest) {
+        Product itemFromRequest = fromCreateProdutRequstToProduct(productRequest);
+        Product savedItem = this.itemRepository.save(itemFromRequest);
+        return fromProductToProductRequest(savedItem);  // Return the saved item as DTO
     }
 
-    public ProductRequest updateItem(ProductRequest itemDTO) {
-        Product itemFromDTO = fromDto(itemDTO);
-        Product savedItem = this.itemRepository.save(itemFromDTO);
-        return toCreateItemRequest(savedItem);  // Return the saved item as DTO
+    public ProductRequest updateItem(UpdateProductRequest productRequest) {
+        Product itemPersisted = itemRepository.findById(productRequest.id()).orElse(null);
+        if (itemPersisted != null) {
+            List<LocalDateTime> updateDates = itemPersisted.getUpdateDates();
+            updateDates.add(LocalDateTime.now());
+
+            Product itemToUpdate =Product.builder()
+                    .id(productRequest.id())
+                    .category(productRequest.category())
+                    .type(productRequest.type())
+                    .name(productRequest.name())
+                    .price(productRequest.price())
+                    .code(productRequest.code())
+                    .description(productRequest.description())
+                    .createDate(itemPersisted.getCreateDate())
+                    .updateDates(updateDates)
+                    .build();
+            itemRepository.save(itemToUpdate);
+            return fromProductToProductRequest(itemToUpdate);
+
+        }
+        return null;
+
     }
 
     public void deleteById(String id) {
         this.itemRepository.deleteById(id);
     }
 
-    public Product fromDto(ProductRequest dto) {
-        return new Product(dto.id(), dto.category(), dto.type(), dto.name(), dto.price(), dto.code(), dto.description());
+    public ProductRequest fromProductToProductRequest(Product product) {
+
+        return new ProductRequest(
+                product.getId(),
+                product.getCategory(),
+                product.getType(),
+                product.getName(),
+                product.getPrice(),
+                product.getCode(),
+                product.getDescription(),
+                product.getCreateDate(),
+                product.getUpdateDates()
+        );
     }
 
-    public ProductRequest toCreateItemRequest(Product item) {
-        return new ProductRequest(item.getId(), item.getCategory(), item.getType(), item.getName(), item.getPrice(), item.getCode(), item.getDescription());
+    public Product fromCreateProdutRequstToProduct(CreateProductRequest product) {
+        return new Product(product.category(), product.type(), product.name(), product.price(), product.code(), product.description());
     }
 
-
-    public Product toItemFromItemCreateRequest(CreateProductRequest createProductRequest) {
-
-        return new Product(createProductRequest.category(), createProductRequest.type(), createProductRequest.name(), createProductRequest.price(), createProductRequest.code(), createProductRequest.description());
-    }
 
 
 }
